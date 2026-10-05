@@ -11,6 +11,7 @@ import productRoutes from './routes/productRoutes.js';
 import batchRoutes from './routes/batchRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import blockchainRoutes from './routes/blockchainRoutes.js';
 
 // Error handlers
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
@@ -56,6 +57,7 @@ app.get('/', (_req, res) => {
       verification: '/api/products/verify/:batchId  (public)',
       dashboard: '/api/dashboard',
       admin: '/api/admin',
+      blockchain: '/api/blockchain',
     },
   });
 });
@@ -68,10 +70,11 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/hives', hiveRoutes);
 app.use('/api/harvest', harvestRoutes);
-app.use('/api/products', productRoutes);   // includes public /verify/:batchId
+app.use('/api/products', productRoutes);
 app.use('/api/batches', batchRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/blockchain', blockchainRoutes);
 
 // ── Error handling middleware (must be LAST) ──────────────────────────────────
 app.use(notFound);

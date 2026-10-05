@@ -1,6 +1,7 @@
 import ProductBatch from '../models/ProductBatch.js';
 import TraceabilityEvent from '../models/TraceabilityEvent.js';
 import { generateBatchHash, generateSimulatedTransactionId } from '../services/hashService.js';
+import { addBlock } from '../services/blockchainService.js';
 import { generateBatchQR } from '../services/qrService.js';
 
 // @desc  Create a product batch
@@ -59,6 +60,20 @@ export const createBatch = async (req, res, next) => {
 
     const batch = await ProductBatch.create(batchData);
 
+    const blockchainBlock = addBlock({
+      type: 'BATCH_REGISTERED',
+      batchId: batchData.batchId,
+      data: {
+        productName: batchData.productName,
+        productCategory: batchData.productCategory,
+        quantity: batchData.quantity,
+        unit: batchData.unit,
+        location: batchData.location,
+        dataHash: batchData.dataHash,
+        transactionId: batchData.blockchainTransactionId,
+      },
+    });
+
     // Auto-create initial BLOCKCHAIN_REGISTERED traceability event
     await TraceabilityEvent.create({
       eventId: `EVT-${batchData.batchId}-REGISTERED`,
@@ -73,7 +88,11 @@ export const createBatch = async (req, res, next) => {
       stepNumber: 99,
     });
 
-    res.status(201).json({ success: true, batch });
+    res.status(201).json({
+      success: true,
+      batch,
+      blockchainBlock,
+    });
   } catch (error) {
     next(error);
   }
@@ -186,7 +205,24 @@ export const addTraceabilityEvent = async (req, res, next) => {
       stepNumber: stepNumber || 1,
     });
 
-    res.status(201).json({ success: true, event });
+    const blockchainBlock = addBlock({
+      type: eventType,
+      batchId: batchId.toUpperCase(),
+      data: {
+        eventId,
+        title,
+        description,
+        location,
+        actor: req.user.name || 'AgriTrace System',
+        dataHash: event.dataHash,
+        stepNumber: stepNumber || 1,
+      },
+    });
+    res.status(201).json({
+      success: true,
+      event,
+      blockchainBlock,
+    });
   } catch (error) {
     next(error);
   }
