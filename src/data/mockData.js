@@ -17,14 +17,14 @@ export const MOCK_USERS = [
   },
   {
     id: 'USR-002',
-    name: 'Sujeet Kumar Yadav',
+    name: 'Sumit Singh',
     email: 'beekeeper@coorgapiary.com',
     role: 'Beekeeper / Producer',
     roleKey: 'beekeeper',
     product: 'Raw Forest & Wildflower Honey',
     location: 'Coorg Apiaries, Karnataka',
     phone: '+91 98765 43210',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    avatar: '/images/sumit.jpg',
     status: 'Active',
     joined: 'Mar 2025'
   },
@@ -671,7 +671,7 @@ export const MOCK_BATCHES = [
       {
         step: 1,
         title: 'Harvest from HIVE-001',
-        actor: 'Sujeet Kumar Yadav',
+        actor: 'sumit singh',
         location: 'Coorg, Karnataka',
         timestamp: '2026-08-30 08:30 IST',
         status: 'Completed',

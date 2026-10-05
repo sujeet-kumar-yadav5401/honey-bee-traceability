@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 import {
   ShieldCheck,
   Search,
@@ -107,12 +108,41 @@ export const VerificationPage = () => {
 
   const handleSimulateScan = () => {
     setIsScanning(true);
-    setTimeout(() => {
-      setIsScanning(false);
-      setInputBatchId('HNY-2026-001');
-      verifyBatch('HNY-2026-001');
-    }, 1200);
   };
+
+  useEffect(() => {
+    if (!isScanning) return;
+
+    const scanner = new Html5QrcodeScanner(
+      'qr-reader',
+      {
+        fps: 10,
+        qrbox: {
+          width: 250,
+          height: 250,
+        },
+      },
+      false
+    );
+
+    scanner.render(
+      (decodedText) => {
+        const batchId = decodedText.includes('/verify/')
+          ? decodedText.split('/verify/')[1].split(/[?#]/)[0]
+          : decodedText.trim();
+
+        setInputBatchId(batchId);
+        setIsScanning(false);
+        verifyBatch(batchId);
+        scanner.clear().catch(() => { });
+      },
+      () => { }
+    );
+
+    return () => {
+      scanner.clear().catch(() => { });
+    };
+  }, [isScanning]);
 
   const handleReset = () => {
     setInputBatchId('');
@@ -164,12 +194,29 @@ export const VerificationPage = () => {
               type="button"
               onClick={handleSimulateScan}
               disabled={isScanning}
-              className="px-4 py-3 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-2xl transition-colors flex items-center justify-center gap-2 shrink-0"
-              title="Simulate Camera Scanner"
+              className="px-4 py-3 text-xs font-bold text-slate-700 bg-slate-100"
+              title="Camera QR Scanner"
             >
-              <Camera size={16} className={isScanning ? 'animate-spin text-amber-600' : 'text-slate-500'} />
+              <Camera
+                size={16}
+                className={
+                  isScanning
+                    ? 'animate-spin text-amber-600'
+                    : 'text-slate-600'
+                }
+              />
               <span>{isScanning ? 'Scanning QR...' : 'QR Camera'}</span>
             </button>
+
+            {isScanning && (
+              <div
+                id="qr-reader"
+                style={{
+                  width: '100%',
+                  marginTop: '16px',
+                }}
+              />
+            )}
           </div>
 
           {/* Quick Demo Buttons for presentation */}
@@ -226,11 +273,10 @@ export const VerificationPage = () => {
           <VerificationCard batch={activeVerification} />
           {/* Data source indicator */}
           <div className="flex justify-center">
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-              apiSource === 'api'
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                : 'bg-slate-100 text-slate-500 border-slate-200'
-            }`}>
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${apiSource === 'api'
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              : 'bg-slate-100 text-slate-500 border-slate-200'
+              }`}>
               <span className={`w-1.5 h-1.5 rounded-full ${apiSource === 'api' ? 'bg-emerald-500' : 'bg-slate-400'}`} />
               {apiSource === 'api' ? '🔴 Live API Data' : '📋 Demo Mode (Backend offline)'}
             </span>
